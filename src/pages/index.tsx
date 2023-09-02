@@ -19,28 +19,33 @@ export default function Home() {
       return;
     }
 
-    const { searchTerms, duration } = await getSearchTerms(excelFile)
+    const groups = await getSearchTerms(excelFile)
 
     try {
-      const pendingToast = toast(`Estimated waiting time: ${duration} seconds`, { autoClose: duration * 1000 });
+      const pendingToast = toast(`Estimated waiting time: ${groups[0].duration} seconds`, { autoClose: groups[0].duration * 1000 });
+      const list = [] as any[]
+      for (const group of groups) {
+        console.log("consulting: " + group.searchTerms);
 
-      const response = await fetch(`/api/scrape`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ searchTerms }),
-      });
+        const response = await fetch(`/api/scrape`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ searchTerms: group.searchTerms }),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log(pendingToast)
-        if (pendingToast) {
-          toast.dismiss(pendingToast)
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data);
+          list.push(...data);
+        } else {
+          console.error('Error fetching data from the server');
         }
-        setAllProductsData(data);
-      } else {
-        console.error('Error fetching data from the server');
+      }
+      setAllProductsData(list);
+      if (pendingToast) {
+        toast.dismiss(pendingToast)
       }
     } catch (error) {
       console.error('Error:', error);
@@ -170,8 +175,20 @@ export default function Home() {
       }
     });
 
-    const duration = Math.ceil(productNames.length * 4)
+    const groups = groupNames(productNames)
+    
+    const duration = Math.ceil(groups.length * 9)
 
-    return { searchTerms: productNames.join(','), duration };
+    return groups.map(products => ({ searchTerms: products.join(','), duration }));
   }
+}
+
+function groupNames(array: string[]) {
+  const chunkSize = 10
+  const result = [];
+  for (let i = 0; i < array.length; i += chunkSize) {
+    const chunk = array.slice(i, i + chunkSize);
+    result.push(chunk);
+  }
+  return result;
 }
