@@ -53,13 +53,13 @@ body {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  width: 300px;
+  width: 250px;
 }
 
 .card img {
-  width: 300px;
+  width: 250px;
   object-fit: contain;
-  aspect-ratio: 1;
+  aspect-ratio: 5/3;
   height: auto;
 }
 
@@ -68,7 +68,7 @@ body {
 }
 
 .card-title {
-  font-size: 1.2rem;
+  font-size: 1rem;
   margin: 0;
   color: #333;
 }
@@ -77,11 +77,11 @@ body {
   display: block;
   color: #007bff;
   text-decoration: none;
-  margin-top: 8px;
+  margin-left: 15px;
 }
 
 .card-price {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: bold;
   color: #e67e22;
 }
@@ -90,7 +90,8 @@ body {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  width: 930px;
+  width: 780px;
+  gap: 15px;
 }
 
 .product-title{
@@ -109,10 +110,11 @@ button{
   background-color: #aaa;
   padding: 0.5rem;
   border-radius: 0.3rem;
+  transition: 100ms;
 }
 
-.chosen button{
-  background-color: green;
+.choose-button:hover{
+  background: #007bff;
 }
 
 button:disabled {
@@ -122,5 +124,39 @@ button:disabled {
 }
 
 #final-button{
-  background-color: green;
+  background-color: #007bff;
+}
+
+/* Style for the customized file upload button */
+.file-upload-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* Style when hovering over the button */
+.file-upload-button:hover {
+  background-color: #0056b3;
+}
+
+#search-button{
+  background-color: #007bff;
+}
+
+.counter{
+  position: fixed;
+  right: 3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  border: solid 2px #007bff;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  color: #007bff;
 }

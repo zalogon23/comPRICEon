@@ -19,6 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 async function scrapeData(productNames: string[]) {
   const percentage = 50;
+  const times = 2.4
 
   const allProductsData = await Promise.all(productNames.map(async (productName) => {
     const formattedProductName = productName.replace(/\s+/g, '-');
@@ -68,8 +69,10 @@ async function scrapeData(productNames: string[]) {
         return prices;
       }, productName);
 
-      const averagePrice = calculateAverage(prices.map((p: any) => p.price));
-      const filteredPrices = prices.filter((p: any) => isInRange(p.price, averagePrice, percentage));
+      let averagePrice = calculateAverage(prices.map((p: any) => p.price));
+      const cappedPrices = prices.filter((p: any) => p.price < averagePrice * times)
+      averagePrice = calculateAverage(cappedPrices.map((p: any) => p.price));
+      const filteredPrices = cappedPrices.filter((p: any) => isInRange(p.price, averagePrice, percentage));
       const sortedPrices = filteredPrices.sort((a: any, b: any) => a.price - b.price);
       const lowestPrices = sortedPrices.slice(0, 6);
 

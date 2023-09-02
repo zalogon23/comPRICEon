@@ -1,11 +1,15 @@
 const ExcelJS = require('exceljs');
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faUpload } from '@fortawesome/free-solid-svg-icons';
+
 
 export default function Home() {
   const [excelFile, setExcelFile] = useState(null as any);
   const [allProductsData, setAllProductsData] = useState([] as any[]);
   const [selectedProducts, setSelectedProducts] = useState({} as Record<string, any>);
+  const [searched, setSearched] = useState(false)
 
 
   const handleFileChange = (event: any) => {
@@ -18,11 +22,11 @@ export default function Home() {
       alert('Please select an Excel file.');
       return;
     }
-
+    setSearched(true)
     const groups = await getSearchTerms(excelFile)
 
     try {
-      const pendingToast = toast(`Estimated waiting time: ${groups[0].duration} seconds`, { autoClose: groups[0].duration * 1000 });
+      const pendingToast = toast.info(`Estimated waiting time: ${groups[0].duration} seconds`, { autoClose: groups[0].duration * 1000 });
       const list = [] as any[]
       for (const group of groups) {
         console.log("consulting: " + group.searchTerms);
@@ -53,15 +57,16 @@ export default function Home() {
   };
 
 
-  const handleChooseButtonClick = (id: number, productName: string, priceInfo: any) => {
+  const handleChooseButtonClick = (productName: string, priceInfo: any) => {
+    const id = Object.keys(selectedProducts).length
     delete selectedProducts[`${productName}-${id}`];
     selectedProducts[`${productName}-${id}`] = priceInfo;
-
+    allProductsData.shift()
     setSelectedProducts({ ...selectedProducts });
   };
 
   const handleFinalButtonClick = async () => {
-    if (Object.keys(selectedProducts).length === allProductsData.length) {
+    if (allProductsData.length === 0) {
       const selectedData = Object.values(selectedProducts);
       generateExcel(selectedData);
     } else {
@@ -97,39 +102,55 @@ export default function Home() {
   return (
     <div className="container">
       {
-        !allProductsData.length
+        !allProductsData.length && !Object.keys(selectedProducts).length
           ?
           <>
-            <input
-              type="file"
-              id="excelFileInput"
-              accept=".xlsx"
-              onChange={handleFileChange}
-            />
-            <button id="searchButton" onClick={handleSearch}>
-              Send
-            </button>
+            {
+              !excelFile
+                ?
+                <>
+                  <label htmlFor="excelFileInput" className="file-upload-button">
+                    <FontAwesomeIcon icon={faUpload} /> Upload File
+                  </label>
+                  <input
+                    type="file"
+                    id="excelFileInput"
+                    accept=".xlsx"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
+                </>
+                :
+                <button disabled={searched} id="search-button" onClick={handleSearch}>
+                  <FontAwesomeIcon icon={faUpload} />
+                  <span className='pl-2'>Send</span>
+                </button>
+            }
           </>
           :
           <>
             <div id="productContainer" className="container">
-              {allProductsData.map((productData, index) => (
-                <div className="product-row" key={`${productData.productName}-${index}`}>
-                  <h2 className="product-title">{productData.productName}</h2>
+              {
+                allProductsData[0]
+                &&
+                <div className="product-row" key={`${allProductsData[0].productName}`}>
+                  <h2 className="product-title pb-8 font-bold text-xl">{allProductsData[0].productName}</h2>
                   <div className="product-cards">
-                    {productData.lowestPrices.sort((a: any, b: any) => a.price - b.price).map((priceInfo: any, id: number) => (
-                      <div key={id} className={`card ${selectedProducts[`${productData.productName}-${index}`] === priceInfo ? 'chosen' : ''}`}>
+                    {allProductsData[0].lowestPrices.sort((a: any, b: any) => a.price - b.price).map((priceInfo: any, id: number) => (
+                      <div key={id} className={`card ${selectedProducts[`${allProductsData[0].productName}`] === priceInfo ? 'chosen' : ''}`}>
                         <img src={priceInfo.image} alt="Product Image" />
                         <div className="card-content">
                           <h2 className="card-title">{priceInfo.title}</h2>
-                          <p className="card-price">${priceInfo.price.toFixed(2)}</p>
-                          <a className="card-link" href={priceInfo.url} target="_blank">
-                            View Product
-                          </a>
+                          <div className="flex items-center mb-2">
+                            <p className="card-price">${priceInfo.price.toFixed(2)}</p>
+                            <a className="card-link" href={priceInfo.url} target="_blank">
+                              View Product
+                            </a>
+                          </div>
                           <button
-                            className="choose-button"
+                            className="choose-button w-full"
                             data-product={priceInfo.title}
-                            onClick={() => handleChooseButtonClick(index, productData.productName, priceInfo)}
+                            onClick={() => handleChooseButtonClick(allProductsData[0].productName, priceInfo)}
                           >
                             Choose
                           </button>
@@ -138,15 +159,23 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-              ))}
+              }
             </div>
-            <button
-              id="final-button"
-              onClick={handleFinalButtonClick}
-              disabled={Object.keys(selectedProducts).length < allProductsData.length}
-            >
-              Download Excel
-            </button>
+            {
+              allProductsData.length !== 0
+              &&
+              <div className="counter">{allProductsData.length}</div>
+            }
+            {
+              allProductsData.length === 0
+              &&
+              <button
+                id="final-button"
+                onClick={handleFinalButtonClick}
+              >
+                Download Excel
+              </button>
+            }
           </>
       }
     </div>
@@ -176,7 +205,7 @@ export default function Home() {
     });
 
     const groups = groupNames(productNames)
-    
+
     const duration = Math.ceil(groups.length * 9)
 
     return groups.map(products => ({ searchTerms: products.join(','), duration }));
