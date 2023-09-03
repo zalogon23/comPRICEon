@@ -33,20 +33,21 @@ async function scrapeData(productNames: string[]) {
       console.log("going to " + updatedUrl)
       await page.goto(updatedUrl);
 
-      const prices = await page.evaluate((productName: string) => {
+      const prices = await page.evaluate(() => {
         const removeDots = (inputString: string) => {
           return inputString?.replace(/\./g, '');
         }
 
         const priceContainers = Array.from(document.querySelectorAll(".andes-card.ui-search-result.shops__cardStyles.ui-search-result--core"));
         const prices = priceContainers.map(p => {
+          const titleTag = p.querySelector("h2.ui-search-item__title.shops__item-title")
           const integerTag = p.querySelector(".ui-search-price__second-line .andes-money-amount__fraction")?.textContent;
 
           if (!integerTag) {
             return {
               price: Infinity,
               url: "",
-              title: productName,
+              title: titleTag?.textContent,
               image: ""
             };
           }
@@ -61,13 +62,13 @@ async function scrapeData(productNames: string[]) {
           const result = {
             price: integer + (fraction / 100),
             url: linkTag.href,
-            title: productName,
+            title: titleTag?.textContent,
             image: ""
           };
           return result;
         });
         return prices;
-      }, productName);
+      });
 
       let averagePrice = calculateAverage(prices.map((p: any) => p.price));
       const cappedPrices = prices.filter((p: any) => p.price < averagePrice * times)

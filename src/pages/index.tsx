@@ -121,7 +121,7 @@ export default function Home() {
                   />
                 </>
                 :
-                <button disabled={searched} id="search-button" onClick={handleSearch}>
+                <button disabled={searched} className="p-3" id="search-button" onClick={handleSearch}>
                   <FontAwesomeIcon icon={faUpload} />
                   <span className='pl-2'>Send</span>
                 </button>
@@ -134,14 +134,16 @@ export default function Home() {
                 allProductsData[0]
                 &&
                 <div className="product-row" key={`${allProductsData[0].productName}`}>
-                  <h2 className="product-title pb-8 font-bold text-xl">{allProductsData[0].productName}</h2>
+                  <h2 className="product-title pb-6 font-bold text-xl">{allProductsData[0].productName}</h2>
                   <div className="product-cards">
                     {allProductsData[0].lowestPrices.sort((a: any, b: any) => a.price - b.price).map((priceInfo: any, id: number) => (
                       <div key={id} className={`card ${selectedProducts[`${allProductsData[0].productName}`] === priceInfo ? 'chosen' : ''}`}>
-                        <img src={priceInfo.image} alt="Product Image" />
-                        <div className="card-content">
+                        <div className="pt-3 px-3">
+                          <img src={priceInfo.image} alt="Product Image" />
                           <h2 className="card-title">{priceInfo.title}</h2>
-                          <div className="flex items-center mb-2">
+                        </div>
+                        <div className="w-full">
+                          <div className="flex items-center justify-start mb-2 px-3">
                             <p className="card-price">${priceInfo.price.toFixed(2)}</p>
                             <a className="card-link" href={priceInfo.url} target="_blank">
                               View Product
@@ -171,6 +173,7 @@ export default function Home() {
               &&
               <button
                 id="final-button"
+                className="p-3"
                 onClick={handleFinalButtonClick}
               >
                 Download Excel
